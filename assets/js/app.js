@@ -1,20 +1,14 @@
 const firebaseConfig = {
+    apiKey: "AIzaSyDMlhB0dNigS2SJmkMvcUpl9z1CLN0fhcM",
+    authDomain: "sona-dst-sti-hub.firebaseapp.com",
+    databaseURL: "https://sona-dst-sti-hub-default-rtdb.firebaseio.com",
+    projectId: "sona-dst-sti-hub",
+    storageBucket: "sona-dst-sti-hub.appspot.com",
+    messagingSenderId: "171152885658",
+    appId: "1:171152885658:web:1324d8dba760c07f60dc23",
+    measurementId: "G-SXBXLDN7XF"
+  };
 
-  apiKey: "AIzaSyAQQ6Ig3F3j6l0n5sff1_bPuGyzgU5V2do",
-
-  authDomain: "sti-hub-83ac7.firebaseapp.com",
-
-  projectId: "sti-hub-83ac7",
-
-  storageBucket: "sti-hub-83ac7.appspot.com",
-
-  messagingSenderId: "445858287632",
-
-  appId: "1:445858287632:web:1bb871f583fa79966ffa95",
-
-  measurementId: "G-S5S7MH3YFW"
-
-};
 
   
   firebase.initializeApp(firebaseConfig);

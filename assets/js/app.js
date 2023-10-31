@@ -504,13 +504,13 @@ function deleteImageCard(imageKey) {
   // Main Event page function
   function addNewEvent() {
     Swal.fire({
-      title: 'Add New Home images',
+      title: 'Add Event Details',
       html: `
         <input id="eventTitle" class="swal2-input" placeholder="Title">
         <input type="date" id="eventDate" class="swal2-input" placeholder="Date">
         <input id="eventPlace" class="swal2-input" placeholder="Place">
         <textarea id="eventContent" class="swal2-textarea" placeholder="Content"></textarea>
-        <input type="file" id="newEventFiles" class="swal2-file" accept="image/, video/" multiple>
+        <input type="file" id="newEventFiles" class="swal2-file" accept="image/*,video/*" multiple>
       `,
       showCancelButton: true,
       confirmButtonText: 'Add',
@@ -521,11 +521,21 @@ function deleteImageCard(imageKey) {
         const place = Swal.getPopup().querySelector('#eventPlace').value;
         const content = Swal.getPopup().querySelector('#eventContent').value;
         const imageFiles = Swal.getPopup().querySelector('#newEventFiles').files;
-  
         if (imageFiles.length === 0) {
           Swal.showValidationMessage('At least one image is required');
           return false;
         }
+
+         const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      const validVideoTypes = ['video/mp4', 'video/avi', 'video/mov']; // Add more valid video types as needed
+
+      for (let i = 0; i < imageFiles.length; i++) {
+        const fileType = imageFiles[i].type;
+        if (!validImageTypes.includes(fileType) && !validVideoTypes.includes(fileType)) {
+          Swal.showValidationMessage('Unsupported file type. Only images and videos are allowed.');
+          return false;
+        }
+      }
   
         const imageUploadPromises = [];
   
@@ -727,7 +737,7 @@ function deleteImageCard(imageKey) {
             <input type="date" id="eventDate" class="swal2-input" placeholder="Date" value="${eventData.date}">
             <input id="eventPlace" class="swal2-input" placeholder="Place" value="${eventData.place}">
             <textarea id="eventContent" class="swal2-textarea" placeholder="Content">${eventData.content}</textarea>
-            <input type="file" id="newEventFiles" class="swal2-file" accept="image/, video/" multiple>
+            <input type="file" id="newEventFiles" class="swal2-file" accept="image/*,video/*" multiple>
           `,
           showCancelButton: true,
           confirmButtonText: 'Save',
@@ -943,41 +953,26 @@ function deleteImageCard(imageKey) {
     loginpg.style.display="block";
   }
   
-  const forgotpwd = document.getElementById('forgotpwd');
-  // Assuming you have Firebase initialized properly (auth variable is defined)
+  const forgotPwdButton = document.getElementById('forgotpwd');
+
+  forgotPwdButton.addEventListener('click', () => {
+    // Prompt the user for their email
+    const email = prompt('Please enter your email:');
   
-  forgotpwd.addEventListener('click', () => {
-    const swalWithInput = Swal.mixin({
-        input: 'email',
-        inputPlaceholder: 'Type your Email',
-        confirmButtonText: 'Submit',
-        showCancelButton: true,
-        cancelButtonText: 'Cancel',
-        focusConfirm: false,
-        preConfirm: (email) => {
-            return auth.sendPasswordResetEmail(email)
-                .then(() => {
-                    return { email };
-                })
-                .catch((error) => {
-                    Swal.showValidationMessage(`Error: ${error.message}`);
-                });
-        }
-    });
-  
-    swalWithInput.fire({
-        title: 'Reset Password',
-        showLoaderOnConfirm: true,
-        allowOutsideClick: () => !Swal.isLoading(),
-    }).then((result) => {
-        if (result.isConfirmed) {
-            swal({
-                title: 'Check Your Email',
-                icon: 'success'
-            });
-        }
-    });
+    if (email) {
+      // Send a password reset email using Firebase (assuming it's properly initialized)
+      auth.sendPasswordResetEmail(email)
+        .then(() => {
+          // Email sent successfully
+          alert('Check your email for a password reset link.');
+        })
+        .catch((error) => {
+          // Handle any errors, e.g., email not found or invalid
+          alert('Password reset failed. ' + error.message);
+        });
+    }
   });
+  
   
   
   
@@ -988,7 +983,7 @@ function deleteImageCard(imageKey) {
       html:
         '<input id="username" class="swal2-input" placeholder="Username">' +
         '<input id="email" class="swal2-input" placeholder="Email">' +
-        '<input type="password" id="password" class="swal2-input" placeholder="Password">' +
+        '<input type="password" id="pass" class="swal2-input" placeholder="Password">' +
         '<input type="password" id="confirmPassword" class="swal2-input" placeholder="Confirm Password">',
       focusConfirm: false,
       showCancelButton: true,
@@ -997,9 +992,10 @@ function deleteImageCard(imageKey) {
       preConfirm: () => {
         const username = document.getElementById('username').value;
         const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        const password = document.getElementById('pass').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
-  
+        alert(password)
+        alert(confirmPassword)
         if (password != confirmPassword) {
           Swal.fire('Error', 'Passwords do not match', 'error');
           return false; // Prevent the Swal dialog from closing
@@ -1041,7 +1037,7 @@ function deleteImageCard(imageKey) {
     Swal.fire({
       title: 'Add Gallery Files',
       html: `
-        <input type="file" id="newEventFiles" class="swal2-file" accept="image/, video/" multiple>
+        <input type="file" id="newEventFiles" class="swal2-file" accept="image/*" multiple>
       `,
       showCancelButton: true,
       confirmButtonText: 'Add',
@@ -1248,17 +1244,35 @@ function addIntervention() {
         ${createPointInput().outerHTML} <!-- Initial point input -->
       </div>
       <button id="addPointButton" class="swal2-confirm swal2-styled" onclick="addPoint()">Add Point</button>
-      <input type="file" id="newEventFile" class="swal2-file" accept="image/, video/">
-    `,
+      <input type="file" id="newEventFile" class="swal2-file" accept="image/*">    `,
     showCancelButton: true,
     confirmButtonText: 'Add',
     cancelButtonText: 'Cancel',
     preConfirm: () => {
-      const title = Swal.getPopup().querySelector('#eventTitle').value;
-      const imageFile = Swal.getPopup().querySelector('#newEventFile').files[0];
+      const titleInput = Swal.getPopup().querySelector('#eventTitle');
+      const title = titleInput.value;
+
+      const imageFileInput = Swal.getPopup().querySelector('#newEventFile');
+      const imageFile = imageFileInput.files[0];
+
+      if (!title) {
+        Swal.showValidationMessage('Please enter a title.');
+        return false;
+      }
+
+      const points = [];
+      for (let i = 1; i <= pointCounter; i++) {
+        const pointInput = Swal.getPopup().querySelector(`#point${i}`);
+        const point = pointInput.value;
+        if (!point) {
+          Swal.showValidationMessage(`Please enter a value for Point ${i}.`);
+          return false;
+        }
+        points.push(point);
+      }
 
       if (!imageFile) {
-        Swal.showValidationMessage('Please select an image');
+        Swal.showValidationMessage('Please select an image.');
         return false;
       }
 
@@ -1268,14 +1282,9 @@ function addIntervention() {
 
       const eventData = {
         title: title,
-        points: [],
+        points: points,
         imageURL: null,
       };
-
-      for (let i = 1; i <= pointCounter; i++) {
-        const point = Swal.getPopup().querySelector(`#point${i}`).value;
-        eventData.points.push(point);
-      }
 
       const imageFileName = new Date().getTime() + '-' + imageFile.name;
       const imageRef = storageRef.child('gallery/' + imageFileName);
@@ -1319,6 +1328,9 @@ function addIntervention() {
   document.getElementById('addPointButton').addEventListener('click', addPoint);
 }
 
+
+
+
 function displayInterventionsWithImages() {
   const eventDisplay = document.getElementById('Interventiondisplay');
 
@@ -1338,19 +1350,18 @@ function displayInterventionsWithImages() {
 
       const card = document.createElement('div');
       card.classList.add('card');
-
+      
       if (eventData.imageURL) {
         const imageURL = eventData.imageURL;
 
         // Reference to the Firebase Storage file
         const storageRef = firebase.storage().refFromURL(imageURL);
-
+        
         // Get the file's metadata
         storageRef.getMetadata()
           .then((metadata) => {
             // The MIME type of the file is in metadata.contentType
             const mimeType = metadata.contentType;
-
             if (mimeType.startsWith('image/')) {
               // Create an image element
               const img = document.createElement('img');
@@ -1383,48 +1394,72 @@ function displayInterventionsWithImages() {
               buttonDiv.appendChild(deleteButton);
 
               card.appendChild(buttonDiv);
-            } else if (mimeType.startsWith('video/')) {
-              // Create a video element
-              const video = document.createElement('video');
-              video.src = imageURL;
-              video.controls = true; // Display video controls
-              video.classList.add('card-img-top', 'fixed-image', 'align-self-center');
-              card.appendChild(video);
-
-              // Create a div for the title
-              const titleDiv = document.createElement('div');
-              titleDiv.classList.add('card-body', 'text-center');
-              titleDiv.innerHTML = `
-                <h5 class="card-title">${eventData.title}</h5>
-              `;
-              card.appendChild(titleDiv);
-
-              // Create a div for buttons
-              const buttonDiv = document.createElement('div');
-              buttonDiv.classList.add('card-body', 'text-center');
-
-              const editButton = document.createElement('button');
-              editButton.className = 'btn btn-primary edit-button';
-              editButton.textContent = 'Edit';
-              editButton.addEventListener('click', () => editEvent(childSnapshot.key));
-              buttonDiv.appendChild(editButton);
-
-              const deleteButton = document.createElement('button');
-              deleteButton.className = 'btn btn-danger delete-button ml-2';
-              deleteButton.textContent = 'Delete';
-              deleteButton.addEventListener('click', () => deleteIntervention(childSnapshot.key));
-              buttonDiv.appendChild(deleteButton);
-
-              card.appendChild(buttonDiv);
             } else {
               // Handle other file types or display an error message
-              const errorMessage = document.createElement('p');
-              errorMessage.textContent = 'Unsupported file type';
-              card.appendChild(errorMessage);
-            }
+            
+            const errorMessage = document.createElement('p');
+            errorMessage.textContent = 'Unsupported file type';
+            card.appendChild(errorMessage);
+            // Create a div for the title
+            const titleDiv = document.createElement('div');
+            titleDiv.classList.add('card-body', 'text-center');
+            titleDiv.innerHTML = `
+              <h5 class="card-title">${eventData.title}</h5>
+            `;
+            card.appendChild(titleDiv);
+
+            // Create a div for buttons
+            const buttonDiv = document.createElement('div');
+            buttonDiv.classList.add('card-body', 'text-center');
+
+            const editButton = document.createElement('button');
+            editButton.className = 'btn btn-primary edit-button';
+            editButton.textContent = 'Edit';
+            editButton.addEventListener('click', () => editIntervention(childSnapshot.key));
+            buttonDiv.appendChild(editButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-danger  ml-2';
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => deleteIntervention(childSnapshot.key));
+            buttonDiv.appendChild(deleteButton);
+
+            card.appendChild(buttonDiv);
+          
+              }
           })
           .catch((error) => {
-            console.error('Error getting file metadata:', error);
+            // Handle other file types or display an error message
+            
+            const errorMessage = document.createElement('p');
+            errorMessage.textContent = 'Unsupported file type';
+            card.appendChild(errorMessage);
+            // Create a div for the title
+            const titleDiv = document.createElement('div');
+            titleDiv.classList.add('card-body', 'text-center');
+            titleDiv.innerHTML = `
+              <h5 class="card-title">${eventData.title}</h5>
+            `;
+            card.appendChild(titleDiv);
+
+            // Create a div for buttons
+            const buttonDiv = document.createElement('div');
+            buttonDiv.classList.add('card-body', 'text-center');
+
+            const editButton = document.createElement('button');
+            editButton.className = 'btn btn-primary edit-button';
+            editButton.textContent = 'Edit';
+            editButton.addEventListener('click', () => editIntervention(childSnapshot.key));
+            buttonDiv.appendChild(editButton);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'btn btn-danger  ml-2';
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => deleteIntervention(childSnapshot.key));
+            buttonDiv.appendChild(deleteButton);
+
+            card.appendChild(buttonDiv);
+          
           });
       }
 
@@ -1453,7 +1488,7 @@ function editIntervention(eventKey) {
           <input id="eventTitle" class="swal2-input" placeholder="Title" value="${eventData.title}">
           <div id="pointsContainer"></div>
           <button id="addPointButton" class="swal2-confirm swal2-styled" onclick="addPoint()">Add Point</button>
-          <input type="file" id="newEventFile" class="swal2-file" accept="image/, video/">
+          <input type="file" id="newEventFile" class="swal2-file" accept="image/*, video/*">
         `,
         showCancelButton: true,
         confirmButtonText: 'Save',

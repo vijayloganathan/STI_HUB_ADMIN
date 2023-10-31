@@ -521,21 +521,25 @@ function deleteImageCard(imageKey) {
         const place = Swal.getPopup().querySelector('#eventPlace').value;
         const content = Swal.getPopup().querySelector('#eventContent').value;
         const imageFiles = Swal.getPopup().querySelector('#newEventFiles').files;
+        if (title === '' || date === '' || place === '' || content === '') {
+          Swal.showValidationMessage('Please fill in all event details');
+          return false;
+        }
         if (imageFiles.length === 0) {
           Swal.showValidationMessage('At least one image is required');
           return false;
         }
-
-         const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
-      const validVideoTypes = ['video/mp4', 'video/avi', 'video/mov']; // Add more valid video types as needed
-
-      for (let i = 0; i < imageFiles.length; i++) {
-        const fileType = imageFiles[i].type;
-        if (!validImageTypes.includes(fileType) && !validVideoTypes.includes(fileType)) {
-          Swal.showValidationMessage('Unsupported file type. Only images and videos are allowed.');
-          return false;
+  
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        const validVideoTypes = ['video/mp4', 'video/avi', 'video/mov']; // Add more valid video types as needed
+  
+        for (let i = 0; i < imageFiles.length; i++) {
+          const fileType = imageFiles[i].type;
+          if (!validImageTypes.includes(fileType) && !validVideoTypes.includes(fileType)) {
+            Swal.showValidationMessage('Unsupported file type. Only images and videos are allowed.');
+            return false;
+          }
         }
-      }
   
         const imageUploadPromises = [];
   
@@ -702,10 +706,64 @@ function deleteImageCard(imageKey) {
                 const errorMessage = document.createElement('p');
                 errorMessage.textContent = 'Unsupported file type';
                 card.appendChild(errorMessage);
+                // Create a div for the title
+              const titleDiv = document.createElement('div');
+              titleDiv.classList.add('card-body', 'text-center');
+              titleDiv.innerHTML = `
+                <h5 class="card-title">${eventData.title}</h5><br>
+              `;
+              card.appendChild(titleDiv);
+
+              // Create a div for buttons
+              const buttonDiv = document.createElement('div');
+              buttonDiv.classList.add('card-body', 'text-center');
+
+              const editButton = document.createElement('button');
+              editButton.className = 'btn btn-primary edit-button';
+              editButton.textContent = 'Edit';
+              editButton.addEventListener('click', () => editEvent(childSnapshot.key));
+              buttonDiv.appendChild(editButton);
+
+              const deleteButton = document.createElement('button');
+              deleteButton.className = 'btn btn-danger delete-button ml-2';
+              deleteButton.textContent = 'Delete';
+              deleteButton.addEventListener('click', () => deleteEvents(childSnapshot.key));
+              buttonDiv.appendChild(deleteButton);
+
+              card.appendChild(buttonDiv);
               }
             })
             .catch((error) => {
-              console.error('Error getting file metadata:', error);
+              // Handle other file types or display an error message
+              const errorMessage = document.createElement('p');
+              errorMessage.textContent = 'Unsupported file type';
+              card.appendChild(errorMessage);
+              // Create a div for the title
+              const titleDiv = document.createElement('div');
+              titleDiv.classList.add('card-body', 'text-center');
+              titleDiv.innerHTML = `
+                <h5 class="card-title">${eventData.title}</h5><br>
+              `;
+              card.appendChild(titleDiv);
+
+              // Create a div for buttons
+              const buttonDiv = document.createElement('div');
+              buttonDiv.classList.add('card-body', 'text-center');
+
+              const editButton = document.createElement('button');
+              editButton.className = 'btn btn-primary edit-button';
+              editButton.textContent = 'Edit';
+              editButton.addEventListener('click', () => editEvent(childSnapshot.key));
+              buttonDiv.appendChild(editButton);
+              const br = document.createElement('br');
+              buttonDiv.appendChild(br);
+              const deleteButton = document.createElement('button');
+              deleteButton.className = 'btn btn-danger delete-button ml-2';
+              deleteButton.textContent = 'Delete';
+              deleteButton.addEventListener('click', () => deleteEvents(childSnapshot.key));
+              buttonDiv.appendChild(deleteButton);
+
+              card.appendChild(buttonDiv);
             });
         }
   
@@ -956,21 +1014,34 @@ function deleteImageCard(imageKey) {
   const forgotPwdButton = document.getElementById('forgotpwd');
 
   forgotPwdButton.addEventListener('click', () => {
-    // Prompt the user for their email
-    const email = prompt('Please enter your email:');
+    Swal.fire({
+      title: 'Password Reset',
+      input: 'email',
+      inputLabel: 'Enter your email',
+      inputPlaceholder: 'Email address',
+      showCancelButton: true,
+      inputValidator: (value) => {
+        if (!value) {
+          return 'You need to enter an email address';
+        }
+      },
+      confirmButtonText: 'Send Reset Email',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const email = result.value;
   
-    if (email) {
-      // Send a password reset email using Firebase (assuming it's properly initialized)
-      auth.sendPasswordResetEmail(email)
-        .then(() => {
-          // Email sent successfully
-          alert('Check your email for a password reset link.');
-        })
-        .catch((error) => {
-          // Handle any errors, e.g., email not found or invalid
-          alert('Password reset failed. ' + error.message);
-        });
-    }
+        // Send a password reset email using Firebase (assuming it's properly initialized)
+        auth.sendPasswordResetEmail(email)
+          .then(() => {
+            // Email sent successfully
+            Swal.fire('Password Reset Email Sent', 'Check your email for a password reset link.', 'success');
+          })
+          .catch((error) => {
+            // Handle any errors, e.g., email not found or invalid
+            Swal.fire('Password Reset Failed', 'Password reset failed. ' + error.message, 'error');
+          });
+      }
+    });
   });
   
   
